@@ -1,0 +1,7 @@
+{
+  "name": "MarketGenius AI",
+  "description": "An A+ Marketing GenAI Solution designed to be an all-in-one content creation and strategy platform. It leverages Google's Gemini API to generate high-quality marketing copy, content briefs, social media posts, and provides strategic advice through an intelligent chatbot.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
