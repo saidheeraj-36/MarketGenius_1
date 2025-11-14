@@ -1,12 +1,19 @@
 
 
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { View } from '../App';
 import { Tool } from './AIContentAssistant';
+
+interface User {
+  name: string;
+  email: string;
+}
 
 interface HeaderProps {
     activeView: View;
     activeTool: Tool | null;
+    user: User;
+    onLogout: () => void;
 }
 
 const viewDetails: { [key in View]: { title: string; subtitle: string } } = {
@@ -26,10 +33,25 @@ const viewDetails: { [key in View]: { title: string; subtitle: string } } = {
 };
 
 
-const Header: React.FC<HeaderProps> = ({ activeView, activeTool }) => {
+const Header: React.FC<HeaderProps> = ({ activeView, activeTool, user, onLogout }) => {
   const details = activeView === 'tool_runner' && activeTool
     ? { title: activeTool.title, subtitle: activeTool.description }
     : viewDetails[activeView];
+  
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+        if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+            setIsMenuOpen(false);
+        }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   return (
     <header className="bg-white shadow-sm p-4 flex justify-between items-center border-b border-slate-200 flex-shrink-0">
@@ -44,16 +66,28 @@ const Header: React.FC<HeaderProps> = ({ activeView, activeTool }) => {
           </svg>
           <span className="absolute top-1 right-1 block h-2.5 w-2.5 rounded-full bg-red-500 border-2 border-white"></span>
         </button>
-        <div className="flex items-center">
-          <img
-            className="h-10 w-10 rounded-full object-cover"
-            src="https://picsum.photos/id/237/200/200"
-            alt="User avatar"
-          />
-          <div className="ml-3 text-right hidden sm:block">
-            <p className="text-sm font-medium text-slate-700">IIM Student</p>
-            <p className="text-xs text-slate-500">Marketing GenAI Course</p>
+        <div className="relative" ref={menuRef}>
+          <div className="flex items-center cursor-pointer" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            <img
+              className="h-10 w-10 rounded-full object-cover"
+              src={`https://api.dicebear.com/8.x/initials/svg?seed=${encodeURIComponent(user.name)}`}
+              alt="User avatar"
+            />
+            <div className="ml-3 text-right hidden sm:block">
+              <p className="text-sm font-medium text-slate-700">{user.name}</p>
+              <p className="text-xs text-slate-500">GAIM Course</p>
+            </div>
           </div>
+          {isMenuOpen && (
+            <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-md shadow-xl border border-slate-200 z-20 py-1">
+              <button onClick={onLogout} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 flex items-center">
+                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                 </svg>
+                 Logout
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>

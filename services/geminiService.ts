@@ -127,12 +127,14 @@ const generatePrompt = (
         const minWords = Math.round(targetWordCount * 0.9);
         const maxWords = Math.round(targetWordCount * 1.1);
 
-        return `You are an expert content writer. Your task is to write a complete, high-quality, and engaging long-form blog article based *strictly* on the provided brief and outline.
-  
+        return `You are an expert content writer. Your task is to write a blog article that strictly follows all instructions.
+
+        **PRIMARY GOAL: WORD COUNT**
+        This is your most important instruction. The final article body MUST be between **${minWords} and ${maxWords} words**. This is a non-negotiable requirement. Adjust content depth to fit these constraints precisely. Failure to meet this word count will result in an unsuccessful task.
+
         **Blog Title:** ${topic}
         **Keywords to include:** ${audience}
         **Tone of Voice:** ${tone}
-        **STRICT WORD COUNT:** The final article body must be between ${minWords} and ${maxWords} words.
         
         **Content Outline:**
         \`\`\`markdown
@@ -140,13 +142,12 @@ const generatePrompt = (
         \`\`\`
   
         **Instructions:**
-        1. **CRITICAL REQUIREMENT: The word count is the most important instruction.** Your response MUST have a word count between ${minWords} and ${maxWords} words. Do not go under or over this range. Adjust the depth of information to fit this strict requirement.
-        2. Adhere strictly to the provided outline. Do not add, remove, or reorder sections.
-        3. Naturally integrate the specified keywords throughout the article.
-        4. Write in a clear, engaging, and authoritative ${tone} tone.
-        5. Flesh out each point in the outline into comprehensive paragraphs.
-        6. **CRITICAL:** To make the article more engaging, you **MUST** strategically place 2-3 relevant image placeholders within the content, each on its own line. Use the **EXACT** format \`[IMAGE: A descriptive prompt for an AI image generator]\`. For example: \`[IMAGE: A bustling e-commerce warehouse with robots sorting packages]\`.
-        7. The output should be a complete article in well-formatted Markdown. Do not include the H1 title in your response, only the body content. Do not include any preamble or postamble.`;
+        1.  **Word Count:** The absolute priority is to ensure the final output is between ${minWords} and ${maxWords} words.
+        2.  **Outline:** Follow the provided outline strictly. Do not add, remove, or reorder sections.
+        3.  **Keywords:** Integrate the specified keywords naturally.
+        4.  **Tone:** Write in a ${tone} tone.
+        5.  **Image Placeholders:** Strategically place 2-3 relevant image placeholders within the content. Each placeholder must be on its own line and formatted as: \`[A descriptive prompt for an AI image generator]\`. For example: \`[A happy customer unboxing a beautifully packaged product from an online store.]\`.
+        6.  **Output:** Provide ONLY the complete article body in well-formatted Markdown. Do not include the H1 title or any other text before or after the article.`;
 
     case ContentType.SEO_BRIEF:
       return `You are a senior SEO strategist. Create a comprehensive content brief for a writer.

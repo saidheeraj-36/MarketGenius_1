@@ -17,14 +17,34 @@ import ImagePlayground from './components/ImagePlayground';
 import ImageEditor from './components/ImageEditor';
 import SpeechGenerator from './components/SpeechGenerator';
 import LiveConversation from './components/LiveConversation';
+import Signup from './components/Signup';
 
 
 export type View = 'dashboard' | 'content' | 'social' | 'briefs' | 'strategy' | 'analyst' | 'assistant' | 'tool_runner' | 'coming_soon' | 'image_gen' | 'image_edit' | 'speech' | 'live_chat';
 
+interface User {
+  name: string;
+  email: string;
+}
+
 const App: React.FC = () => {
+  const [user, setUser] = useState<User | null>(null);
   const [activeView, setActiveView] = useState<View>('assistant');
   const [activeTool, setActiveTool] = useState<Tool | null>(null);
   const [comingSoonFeature, setComingSoonFeature] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    // Check for user in localStorage on initial load
+    try {
+      const storedUser = localStorage.getItem('marketGeniusUser');
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      }
+    } catch (error) {
+      console.error("Failed to parse user from localStorage", error);
+      localStorage.removeItem('marketGeniusUser');
+    }
+  }, []);
 
   useEffect(() => {
     // Reset active tool if we navigate away from the tool runner
@@ -35,6 +55,17 @@ const App: React.FC = () => {
         setComingSoonFeature(undefined);
     }
   }, [activeView]);
+
+  const handleLogin = (name: string, email: string) => {
+    const newUser = { name, email };
+    localStorage.setItem('marketGeniusUser', JSON.stringify(newUser));
+    setUser(newUser);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('marketGeniusUser');
+    setUser(null);
+  };
 
   const handleLaunchTool = (tool: Tool) => {
     if (tool.linkedView) {
@@ -91,11 +122,15 @@ const App: React.FC = () => {
     }
   };
 
+  if (!user) {
+    return <Signup onLogin={handleLogin} />;
+  }
+
   return (
     <div className="bg-slate-50 min-h-screen flex text-slate-800">
       <Sidebar activeView={activeView} setActiveView={setActiveView} />
       <div className="flex-1 flex flex-col h-screen">
-        <Header activeView={activeView} activeTool={activeTool} />
+        <Header activeView={activeView} activeTool={activeTool} user={user} onLogout={handleLogout} />
         <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto">
           {renderView()}
         </main>

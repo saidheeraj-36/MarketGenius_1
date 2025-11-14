@@ -1,4 +1,6 @@
 
+
+
 import React, { useState, useEffect, useRef } from 'react';
 import { generateBrief, generateContent, generateImage } from '../services/geminiService';
 import { BlogBrief, ContentType, ToneOfVoice } from '../types';
@@ -7,6 +9,7 @@ import SeoSidebar from './SeoSidebar';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import MarkdownToolbar from './MarkdownToolbar';
 
 type Stage = 'initial' | 'briefing' | 'generating' | 'done';
 
@@ -64,6 +67,7 @@ const ArticleEditor: React.FC = () => {
     const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
     const resultContainerRef = useRef<HTMLDivElement>(null);
     const exportMenuRef = useRef<HTMLDivElement>(null);
+    const articleBodyRef = useRef<HTMLTextAreaElement>(null);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -135,7 +139,7 @@ const ArticleEditor: React.FC = () => {
     
             // Process images
             setArticleLoadingMessage('Scanning for image opportunities...');
-            const imagePlaceholders = [...articleWithPlaceholders.matchAll(/\[IMAGE:\s*(.*?)\s*\]/g)];
+            const imagePlaceholders = [...articleWithPlaceholders.matchAll(/^\[(?:IMAGE:)?\s*(.*?)\s*\]$/gm)];
     
             if (imagePlaceholders.length > 0) {
                 let processedArticle = articleWithPlaceholders;
@@ -148,7 +152,7 @@ const ArticleEditor: React.FC = () => {
                     
                     const imageUrl = await generateImage(prompt, '16:9');
                     newImageUrls.push(imageUrl); // Collect new URLs for cleanup
-                    const imageMarkdown = `\n\n![${prompt}](${imageUrl})\n\n`;
+                    const imageMarkdown = `\n\n![${prompt.replace(/\[|\]/g, '')}](${imageUrl})\n\n`;
                     
                     processedArticle = processedArticle.replace(placeholder, imageMarkdown);
                     setArticle(processedArticle); // Update state progressively
@@ -382,7 +386,9 @@ const ArticleEditor: React.FC = () => {
                                                 </h3>
                                                 <span className="text-xs text-slate-500 font-medium bg-slate-100 px-2 py-1 rounded-md">{countWords(article)} words</span>
                                             </div>
+                                            <MarkdownToolbar textAreaRef={articleBodyRef} onContentChange={setArticle} />
                                             <textarea
+                                                ref={articleBodyRef}
                                                 value={article}
                                                 onChange={(e) => setArticle(e.target.value)}
                                                 className="w-full h-full p-4 border-0 focus:ring-0 leading-relaxed resize-none flex-1 min-h-[400px]"
